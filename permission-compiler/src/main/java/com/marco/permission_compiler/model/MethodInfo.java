@@ -23,7 +23,7 @@ public class MethodInfo {
         packageName = packageElement.getQualifiedName().toString();
         int packageLen = packageName.length();
         //getQualifiedName拿到的是全路径，需要把包命截掉才能拿到类名
-        className = typeElement.getQualifiedName().toString().substring(packageLen).replace(".", "$");
+        className = typeElement.getQualifiedName().toString().substring(packageLen + 1).replace(".", "$");
         fileName = className + "$" + SUFFIX;
     }
 
@@ -35,7 +35,7 @@ public class MethodInfo {
         builder.append("\n");
 
         builder.append("public class ").append(fileName)
-                .append(" implements ").append(SUFFIX).append("<").append(SUFFIX).append(">");
+                .append(" implements ").append(SUFFIX).append("<").append(className).append(">");
         builder.append("{\n");
         generateMethod(builder);
         builder.append("\n}");
@@ -50,7 +50,7 @@ public class MethodInfo {
 
     private void generateGrantMethod(StringBuilder builder) {
         builder.append("@Override\n");
-        builder.append("public void grant(").append(className).append(" source, String[] permissions){\n");
+        builder.append("public void grant(").append("int requestCode, ").append(className).append(" source, String[] permissions){\n");
         builder.append("switch(requestCode){\n");
         for (int requestCode : grantMethodMap.keySet()) {
             builder.append("case ").append(requestCode).append(":\n");
@@ -63,7 +63,7 @@ public class MethodInfo {
 
     private void generateDeniedMethod(StringBuilder builder) {
         builder.append("@Override\n");
-        builder.append("public void denied(").append(className).append(" source, String[] permissions){\n");
+        builder.append("public void denied(").append("int requestCode, ").append(className).append(" source, String[] permissions){\n");
         builder.append("switch(requestCode){");
         for (int requestCode : deniedMethodMap.keySet()) {
             builder.append("case ").append(requestCode).append(":\n");
@@ -76,7 +76,7 @@ public class MethodInfo {
 
     private void generateRationalMethod(StringBuilder builder) {
         builder.append("@Override\n");
-        builder.append("public void rational(").append(className).append(" source, String[] permissions){\n");
+        builder.append("public boolean rational(").append("int requestCode, ").append(className).append(" source, String[] permissions){\n");
         builder.append("switch(requestCode){");
         for (int requestCode : rationalMethodMap.keySet()) {
             builder.append("case ").append(requestCode).append(":\n");

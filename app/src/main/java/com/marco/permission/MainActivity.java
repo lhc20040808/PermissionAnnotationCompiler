@@ -34,12 +34,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @PermissionDenied(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    private void onPermissionDenied(String[] permissions) {
+    public void onPermissionDenied(String[] permissions) {
         Toast.makeText(this, "权限申请被拒绝", Toast.LENGTH_LONG).show();
     }
 
     @PermissionRational(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    protected void onPermissionRational(String[] permissions) {
+    private void onPermissionRational(String[] permissions) {
         Toast.makeText(this, "弹出权限提示 ", Toast.LENGTH_LONG).show();
     }
 }

@@ -55,12 +55,15 @@ public class PermissionProcessor extends AbstractProcessor {
         methodMap.clear();
         messager.printMessage(Diagnostic.Kind.NOTE, "permission annotation process start");
         if (!handleAnnotation(roundEnvironment, PermissionGrant.class)) {
+            messager.printMessage(Diagnostic.Kind.NOTE, "handle granted failed");
             return false;
         }
         if (!handleAnnotation(roundEnvironment, PermissionDenied.class)) {
+            messager.printMessage(Diagnostic.Kind.NOTE, "handle denied failed");
             return false;
         }
         if (!handleAnnotation(roundEnvironment, PermissionRational.class)) {
+            messager.printMessage(Diagnostic.Kind.NOTE, "handle rational failed");
             return false;
         }
 
@@ -85,7 +88,7 @@ public class PermissionProcessor extends AbstractProcessor {
         Set<? extends Element> elementsAnnotatedWith = roundEnvironment.getElementsAnnotatedWith(annotation);
         for (Element e : elementsAnnotatedWith) {
             if (!checkMethodValidator(e, annotation)) {
-                return false;
+                continue;
             }
             ExecutableElement methodElement = (ExecutableElement) e;
             TypeElement enclosingElement = (TypeElement) methodElement.getEnclosingElement();
@@ -121,14 +124,17 @@ public class PermissionProcessor extends AbstractProcessor {
     private boolean checkMethodValidator(Element element, Class<? extends Annotation> annotation) {
         if (element.getKind() != ElementKind.METHOD) {
             //不是方法，则不处理
+            messager.printMessage(Diagnostic.Kind.NOTE, element.getSimpleName() + "is not a method.Can not handle it.");
             return false;
         }
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
+            messager.printMessage(Diagnostic.Kind.NOTE, element.getSimpleName() + "is private.Can not handle it.");
             //Private修饰的方法，不处理
             return false;
         }
         if (element.getModifiers().contains(Modifier.ABSTRACT)) {
             //抽象方法，不处理
+            messager.printMessage(Diagnostic.Kind.NOTE, element.getSimpleName() + "is abstract..Can not handle it.");
             return false;
         }
         return true;
