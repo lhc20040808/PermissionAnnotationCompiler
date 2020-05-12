@@ -6,10 +6,14 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import com.marco.permission_annotation.PermissionDenied;
 import com.marco.permission_annotation.PermissionGrant;
+import com.marco.permission_annotation.PermissionRational;
+import com.marco.permission_helper.PermissionProxy;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PermissionProxy<MainActivity> {
     private final static int RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE = 100;
 
     @Override
@@ -26,12 +30,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @PermissionGrant(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    private void onRequestWriteExternalStorageGranted() {
+    public void onPermissionGranted() {
+        Toast.makeText(this,"权限申请成功",Toast.LENGTH_LONG).show();
+    }
+
+    @PermissionDenied(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
+    private void onPermissionDenied() {
+        Toast.makeText(this,"权限申请被拒绝",Toast.LENGTH_LONG).show();
+    }
+
+    @PermissionRational(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
+    protected void onPermissionRational() {
+        Toast.makeText(this,"弹出权限提示 ",Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void grant(MainActivity source, String[] permissions) {
 
     }
 
-    @PermissionGrant(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    private void onRequestWriteExternalStorageDenied() {
+    @Override
+    public void denied(MainActivity source, String[] permissions) {
 
+    }
+
+    @Override
+    public boolean rational(MainActivity source, String[] permissions) {
+        return false;
     }
 }

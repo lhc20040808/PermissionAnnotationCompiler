@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/permission-annotation" />
             <option value="$PROJECT_DIR$/permission-compiler" />
+            <option value="$PROJECT_DIR$/permission-helper" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

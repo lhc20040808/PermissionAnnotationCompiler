@@ -6,6 +6,8 @@ import com.marco.permission_annotation.PermissionGrant;
 import com.marco.permission_annotation.PermissionRational;
 import com.marco.permission_compiler.model.MethodInfo;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -26,6 +29,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 @AutoService(Processor.class)
 public class PermissionProcessor extends AbstractProcessor {
@@ -33,12 +37,14 @@ public class PermissionProcessor extends AbstractProcessor {
     private Elements elementUtils;
     private Messager messager;
     private HashMap<String, MethodInfo> methodMap = new HashMap<>();
+    private Filer filer;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
         elementUtils = processingEnvironment.getElementUtils();
         messager = processingEnvironment.getMessager();//日志输出工具，这里不能用Log
+        filer = processingEnvironment.getFiler();
     }
 
     /**
@@ -57,6 +63,21 @@ public class PermissionProcessor extends AbstractProcessor {
         if (!handleAnnotation(roundEnvironment, PermissionRational.class)) {
             return false;
         }
+
+        for (String className : methodMap.keySet()) {
+            MethodInfo methodInfo = methodMap.get(className);
+            try {
+                JavaFileObject sourceFile = filer.createSourceFile(methodInfo.packageName + "." + methodInfo.fileName);
+                Writer writer = sourceFile.openWriter();
+                writer.write(methodInfo.generateJavaCode());
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                messager.printMessage(Diagnostic.Kind.NOTE, "write file failed:" + e.getMessage());
+            }
+        }
+
         return false;
     }
 
@@ -71,24 +92,22 @@ public class PermissionProcessor extends AbstractProcessor {
             String className = enclosingElement.getQualifiedName().toString();
             MethodInfo methodInfo = methodMap.get(className);
             if (methodInfo == null) {
-                methodInfo = new MethodInfo();
+                methodInfo = new MethodInfo(elementUtils, enclosingElement);
                 methodMap.put(className, methodInfo);
             }
             Annotation annotationClz = methodElement.getAnnotation(annotation);
             String methodName = methodElement.getSimpleName().toString();
             List<? extends VariableElement> parameters = methodElement.getParameters();
+
+            if (parameters == null || parameters.size() < 1) {
+                String msg = "the method %s marked by annotation %s must have an unique parameter [String[] permissions]";
+                throw new IllegalArgumentException(String.format(msg, methodName, annotationClz.getClass().getSimpleName()));
+            }
+
             if (annotationClz instanceof PermissionGrant) {
-                if (parameters == null || parameters.size() < 1) {
-                    String msg = "the method %s marked by annotation %s must have an unique parameter [String[] permissions]";
-                    throw new IllegalArgumentException(String.format(msg, methodName, annotationClz.getClass().getSimpleName()));
-                }
                 int requestCode = ((PermissionGrant) annotationClz).value();
                 methodInfo.grantMethodMap.put(requestCode, methodName);
             } else if (annotationClz instanceof PermissionDenied) {
-                if (parameters == null || parameters.size() < 1) {
-                    String msg = "the method %s marked by annotation %s must have an unique parameter [String[] permissions]";
-                    throw new IllegalArgumentException(String.format(msg, methodName, annotationClz.getClass().getSimpleName()));
-                }
                 int requestCode = ((PermissionDenied) annotationClz).value();
                 methodInfo.deniedMethodMap.put(requestCode, methodName);
             } else if (annotationClz instanceof PermissionRational) {
