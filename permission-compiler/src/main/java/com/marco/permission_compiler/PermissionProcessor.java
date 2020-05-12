@@ -77,7 +77,7 @@ public class PermissionProcessor extends AbstractProcessor {
                 messager.printMessage(Diagnostic.Kind.NOTE, "write file failed:" + e.getMessage());
             }
         }
-
+        messager.printMessage(Diagnostic.Kind.NOTE, "permission annotation process end");
         return false;
     }
 

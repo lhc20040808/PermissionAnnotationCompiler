@@ -1,17 +1,16 @@
 package com.marco.permission;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import com.marco.permission_annotation.PermissionDenied;
 import com.marco.permission_annotation.PermissionGrant;
 import com.marco.permission_annotation.PermissionRational;
-import com.marco.permission_helper.PermissionProxy;
 
 public class MainActivity extends AppCompatActivity {
     private final static int RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE = 100;
@@ -30,17 +29,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @PermissionGrant(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    public void onPermissionGranted() {
+    public void onPermissionGranted(String[] permissions) {
         Toast.makeText(this, "权限申请成功", Toast.LENGTH_LONG).show();
     }
 
     @PermissionDenied(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    private void onPermissionDenied() {
+    private void onPermissionDenied(String[] permissions) {
         Toast.makeText(this, "权限申请被拒绝", Toast.LENGTH_LONG).show();
     }
 
     @PermissionRational(value = RESULT_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE)
-    protected void onPermissionRational() {
+    protected void onPermissionRational(String[] permissions) {
         Toast.makeText(this, "弹出权限提示 ", Toast.LENGTH_LONG).show();
     }
 }
